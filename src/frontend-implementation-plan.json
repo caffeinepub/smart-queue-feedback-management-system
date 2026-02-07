@@ -1,0 +1,189 @@
+{
+  "kind": "implementation_plan",
+  "version": "1.0",
+  "title": "Smart Queue & Feedback Management System MVP (Frontend)",
+  "requirements": [
+    {
+      "id": "REQ-4",
+      "summary": "User queue flow: select a service, join/leave queue, and view live-refreshed queue status (position + status) with manual refresh.",
+      "acceptanceCriteria": [
+        "There is a clear flow to select a service and join its queue.",
+        "After joining, the UI displays the user’s current position and status state.",
+        "The UI provides a cancel/leave action and updates state after completion.",
+        "Queue status view refreshes via polling (React Query) at a reasonable interval (e.g., every 5–10 seconds) and supports manual refresh."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "create",
+          "description": "Create the app shell with primary navigation between Queue, Feedback, and Admin areas; integrate authentication gating per the selected authorization component (require login before showing application data). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/auth/AuthGate.tsx",
+          "operation": "create",
+          "description": "Add an AuthGate that uses Internet Identity state to require login before rendering queue data; show a clear English prompt to log in. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/auth/LoginButton.tsx",
+          "operation": "create",
+          "description": "Add a Login/Logout button that uses the authorization component’s recommended Internet Identity flow and clears React Query cache on logout. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/auth/ProfileSetupDialog.tsx",
+          "operation": "create",
+          "description": "Add a first-login profile setup dialog (collect name) using getCallerUserProfile/saveCallerUserProfile to avoid showing principal IDs; ensure no modal flash per guidance. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/features/services/useServices.ts",
+          "operation": "create",
+          "description": "Create a React Query hook to fetch and cache listServices for service selection; ensure queries are enabled only when the backend actor is available."
+        },
+        {
+          "path": "frontend/src/features/queue/useQueue.ts",
+          "operation": "create",
+          "description": "Create React Query hooks for joinQueue, leaveQueue, and queue status retrieval; include polling (e.g., 7s) and a manual refresh function; derive user position + status by combining queue snapshot with current identity principal."
+        },
+        {
+          "path": "frontend/src/features/queue/QueuePage.tsx",
+          "operation": "create",
+          "description": "Build the user Queue UI: service selector, join button, live status card (position + status), manual refresh control, and leave/cancel action; show English errors from backend traps in a user-friendly way; use shadcn-ui components by composition only (do not edit immutable ui paths). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/hooks/useActor.ts",
+          "operation": "modify",
+          "description": "Ensure actor-dependent queries used by queue UI behave correctly across login/logout (including cache invalidation) and provide a stable actor reference for React Query hooks."
+        }
+      ]
+    },
+    {
+      "id": "REQ-5",
+      "summary": "User feedback flow: select a service, submit rating + optional comment, and show confirmation after success with clear error handling.",
+      "acceptanceCriteria": [
+        "Feedback form includes a rating control and a comment field (comment optional).",
+        "Submission errors are shown in English with actionable guidance.",
+        "On success, the form resets and shows a confirmation message in English."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/features/feedback/useFeedback.ts",
+          "operation": "create",
+          "description": "Create React Query mutation hook for submitFeedback and query hook for listServices (reuse services hook) to support selecting a service and submitting feedback; handle and normalize errors into clear English messages."
+        },
+        {
+          "path": "frontend/src/features/feedback/FeedbackPage.tsx",
+          "operation": "create",
+          "description": "Build feedback UI with service selector, rating control, optional comment field, submit button, success confirmation/receipt state, and error display; use shadcn-ui components by composition only (do not edit immutable ui paths). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire FeedbackPage into the app’s primary navigation and ensure it is protected by the AuthGate (login required before showing application data). Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-6",
+      "summary": "Admin/staff area: manage queue (view entries, serve next, no-show/cancel, clear) and review feedback per service with authorization-aware UI behavior.",
+      "acceptanceCriteria": [
+        "Admin view shows a service selector and a queue list (ordered) with each entry’s state.",
+        "Admin actions (advance, no-show/cancel, clear) trigger backend updates and the UI reflects changes.",
+        "Admin view includes a feedback list per service (rating, comment, timestamp).",
+        "If the user is not authorized as admin, admin actions are disabled or the admin view is hidden with a clear English message."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/features/admin/useAdmin.ts",
+          "operation": "create",
+          "description": "Create React Query hooks for admin capabilities: isCallerAdmin, getQueueSnapshot (polling), serveNext, markNoShow, leave/cancel (as no-show/cancel action), and getServiceFeedback; include cache invalidation so lists refresh after mutations."
+        },
+        {
+          "path": "frontend/src/features/admin/AdminPage.tsx",
+          "operation": "create",
+          "description": "Build Admin UI: service selector, ordered queue list with entry state, action buttons (serve next, mark no-show/cancel per entry, clear queue), and feedback list (rating/comment/timestamp); hide or disable admin actions when not authorized and show a clear English message; use shadcn-ui components by composition only (do not edit immutable ui paths). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/auth/AccessDeniedScreen.tsx",
+          "operation": "create",
+          "description": "Add a reusable AccessDeniedScreen for unauthorized admin access with clear English messaging and a path back to user areas. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire AdminPage into the app navigation and gate it behind an admin check (isCallerAdmin); show AccessDeniedScreen or disable admin controls for non-admin users. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-7",
+      "summary": "Apply a cohesive visual theme across the frontend (non-blue/purple primary), with consistent layout and component styling across Queue, Feedback, and Admin areas.",
+      "acceptanceCriteria": [
+        "The app uses a consistent palette (primary/secondary/background/text) and typographic scale across pages.",
+        "Primary brand color is not blue or purple.",
+        "Layout is consistent (header/nav, content widths, card styles) across Queue, Feedback, and Admin areas."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/index.css",
+          "operation": "create",
+          "description": "Define global theme styles (typography scale, spacing rhythm, and a warm neutral palette with teal/orange accents) ensuring the primary brand color is not blue or purple; integrate with Tailwind/shadcn-ui theming via CSS variables where applicable. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/layout/AppLayout.tsx",
+          "operation": "create",
+          "description": "Create a shared layout (header with logo + nav, consistent content width, consistent card/section spacing) used by Queue, Feedback, and Admin pages; compose shadcn-ui components without editing immutable ui paths. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Adopt AppLayout for all areas and ensure consistent header/nav and page structure across Queue, Feedback, and Admin. Verify the component's usage instructions before implementing."
+        }
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "summary": "Add required generated static images under frontend/public/assets/generated and render logo in header, hero on home screen, and empty-state illustration in relevant UI states.",
+      "acceptanceCriteria": [
+        "All required generated images exist under frontend/public/assets/generated with the specified filenames.",
+        "At least the logo is used in the app header and the hero illustration is used on the landing/home screen.",
+        "Images are loaded as static assets (no backend image serving)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/public/assets/generated/sqfm-logo.dim_256x256.png",
+          "operation": "create",
+          "description": "Add the required generated logo asset at frontend/public/assets/generated/sqfm-logo.dim_256x256.png."
+        },
+        {
+          "path": "frontend/public/assets/generated/sqfm-hero.dim_1200x600.png",
+          "operation": "create",
+          "description": "Add the required generated hero illustration asset at frontend/public/assets/generated/sqfm-hero.dim_1200x600.png."
+        },
+        {
+          "path": "frontend/public/assets/generated/sqfm-empty-state.dim_512x512.png",
+          "operation": "create",
+          "description": "Add the required generated empty-state illustration asset at frontend/public/assets/generated/sqfm-empty-state.dim_512x512.png."
+        },
+        {
+          "path": "frontend/src/components/layout/AppLayout.tsx",
+          "operation": "modify",
+          "description": "Render the static logo in the app header using frontend/public/assets/generated/sqfm-logo.dim_256x256.png; ensure it appears consistently across Queue, Feedback, and Admin areas. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/components/home/HomeHero.tsx",
+          "operation": "create",
+          "description": "Create a landing/home hero section that renders frontend/public/assets/generated/sqfm-hero.dim_1200x600.png and brief English guidance for using the app; keep it within existing app shell (do not introduce additional top-level routes beyond what App.tsx provides). Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/features/queue/QueuePage.tsx",
+          "operation": "modify",
+          "description": "Use the empty-state illustration frontend/public/assets/generated/sqfm-empty-state.dim_512x512.png in the 'No active queue' UI state with clear English text and a call-to-action to join a service queue. Verify the component's usage instructions before implementing."
+        },
+        {
+          "path": "frontend/src/App.tsx",
+          "operation": "modify",
+          "description": "Wire HomeHero into the initial view/landing area within the main app shell so the hero illustration is visible on the landing/home screen. Verify the component's usage instructions before implementing."
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "frontend/src/App.tsx": "Main application component with TanStack Router setup, authentication flow, profile setup dialog, and theme provider integration for the Smart Queue system.",
+  "frontend/src/hooks/useQueries.ts": "React Query hooks for all backend operations including user profiles, services, queue management (join/leave/status), admin functions (serve/no-show), and feedback submission/retrieval.",
+  "frontend/src/components/auth/AuthGate.tsx": "Authentication gate component that displays a login prompt for unauthenticated users and shows a loading state during initialization.",
+  "frontend/src/components/auth/LoginButton.tsx": "Reusable login/logout button component with Internet Identity integration and query cache clearing on logout.",
+  "frontend/src/components/auth/ProfileSetupDialog.tsx": "Modal dialog for first-time user profile setup that collects the user's name and prevents dismissal until completed.",
+  "frontend/src/components/auth/AccessDeniedScreen.tsx": "Access denied screen component displayed when non-admin users attempt to access admin-only areas with navigation back to home.",
+  "frontend/src/components/layout/AppLayout.tsx": "Main layout component with header, logo, navigation menu (desktop and mobile), footer with attribution, and consistent styling across all pages.",
+  "frontend/src/pages/HomePage.tsx": "Landing page with hero section, feature cards, how-it-works guide, and call-to-action sections showcasing the Smart Queue system.",
+  "frontend/src/features/queue/QueuePage.tsx": "Queue management page where users select a service, join queues, track their position with live updates (7s polling), and leave queues with real-time status display.",
+  "frontend/src/features/feedback/FeedbackPage.tsx": "Feedback submission page with service selection, star rating system (1-5), optional comment field, and success confirmation display.",
+  "frontend/src/features/admin/AdminPage.tsx": "Admin dashboard with tabs for queue management (serve next, mark no-show) and feedback review, protected by admin authorization check with access denied screen for non-admins.",
+  "frontend/src/index.css": "Global styles with OKLCH color system featuring warm neutrals, teal primary color, and orange accents for both light and dark modes.",
+  "frontend/tailwind.config.js": "Tailwind configuration with custom color tokens, Inter font family, and extended design system matching the warm teal/orange theme."
+}

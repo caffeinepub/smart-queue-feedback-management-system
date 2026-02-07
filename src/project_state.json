@@ -1,0 +1,93 @@
+{
+  "schemaVersion": "1.0.0",
+  "projectStateVersion": 3,
+  "summary": "Build a Smart Queue & Feedback Management System: users join a digital queue, track their position, and submit feedback for services.",
+  "architectural_notes": [],
+  "known_issues": [],
+  "isFixRequest": false,
+  "imageRequirements": "## Required Images\n- Minimal modern logo mark featuring a queue/ticket motif (sqfm-logo.dim_256x256.png)\n- Wide hero illustration showing people in an organized line with abstract UI elements, warm neutral palette with teal/orange accents (sqfm-hero.dim_1200x600.png)\n- Simple empty-state illustration for ‘No active queue’ (sqfm-empty-state.dim_512x512.png)",
+  "existing_features": [
+    {
+      "id": "feature-build-a-user-facing-frontend-that-lets-users-1-select-a-service-2-join-the-queue-3-view-live-refreshed-queue-status-position-status-and-4-leave-the-queue",
+      "title": "Build a user-facing frontend that lets users: (1) select a service, (2) join the queue, (3) view live-refreshed queue status (position + status), and (4) leave the queue.",
+      "reqIds": [
+        "REQ-4"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-build-a-user-facing-feedback-ui-users-can-select-a-service-submit-a-rating-and-optional-comment-and-see-a-confirmation-receipt-state-after-successful-submission",
+      "title": "Build a user-facing feedback UI: users can select a service, submit a rating and optional comment, and see a confirmation/receipt state after successful submission.",
+      "reqIds": [
+        "REQ-5"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-an-admin-staff-frontend-area-to-manage-queues-and-review-feedback-choose-a-service-view-current-queue-entries-advance-serve-next-mark-no-show-cancel-clear-queue-and-view-feedback-list",
+      "title": "Add an admin/staff frontend area to manage queues and review feedback: choose a service, view current queue entries, advance/serve next, mark no-show/cancel, clear queue, and view feedback list.",
+      "reqIds": [
+        "REQ-6"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-apply-a-cohesive-creative-visual-theme-across-the-frontend-colors-typography-spacing-and-components-suitable-for-a-service-queue-product-avoiding-blue-purple-as-primary-brand-colors",
+      "title": "Apply a cohesive, creative visual theme across the frontend (colors, typography, spacing, and components) suitable for a “service queue” product, avoiding blue/purple as primary brand colors.",
+      "reqIds": [
+        "REQ-7"
+      ],
+      "version": 1
+    },
+    {
+      "id": "feature-add-required-static-generated-images-to-the-frontend-and-render-them-in-the-ui-store-under-frontend-public-assets-generated",
+      "title": "Add required static generated images to the frontend and render them in the UI (store under frontend/public/assets/generated).",
+      "reqIds": [
+        "REQ-8"
+      ],
+      "version": 1
+    }
+  ],
+  "new_feature_requests": [
+    {
+      "id": "AR-1",
+      "summary": "Implement smart digital queuing (join queue and track position/status)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-2",
+      "summary": "Implement feedback management (collect and submit feedback for services)",
+      "reqIds": [],
+      "status": "pending"
+    },
+    {
+      "id": "AR-3",
+      "summary": "Implement backend data models and APIs for a digital queue: create/list services, join a service queue, leave a queue, fetch a user’s current queue status (position + state), and fetch the current queue snapshot for a service.",
+      "reqIds": [
+        "REQ-1"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-4",
+      "summary": "Implement backend staff/admin queue controls for a service: advance to next customer (serve current), mark an entry as no-show/cancelled, and reset/clear a service queue.",
+      "reqIds": [
+        "REQ-2"
+      ],
+      "status": "pending"
+    },
+    {
+      "id": "AR-5",
+      "summary": "Implement backend feedback collection APIs: submit feedback for a service (rating + free-text comment), and list feedback entries per service (admin/staff view).",
+      "reqIds": [
+        "REQ-3"
+      ],
+      "status": "pending"
+    }
+  ],
+  "gameProjectType": "none",
+  "projectName": "SMART QUEUE & FEEDBACK MANAGEMENT SYSTEM",
+  "clarification_mode": "instant",
+  "clarification_rounds": 0
+}

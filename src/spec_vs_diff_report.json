@@ -1,0 +1,100 @@
+{
+  "kind": "spec_vs_diff_report",
+  "version": "1.0",
+  "generatedAt": "2026-02-07T13:08:31.169Z",
+  "summary": "The diff adds a Motoko backend actor and a full React frontend (routing, auth gate, queue/feedback/admin pages, theming, React Query polling). However, several core requirements are either not evidenced or appear partially implemented based on the truncated backend and the frontend’s API expectations.",
+  "missing_requirements": [
+    {
+      "id": "REQ-1",
+      "requirement": "Queue join should return a queue entry identifier (or equivalent) and user status should include at minimum serviceId, 1-based position, and status state; queue data must persist deterministically in stable storage across upgrades.",
+      "reason": "In the visible backend code, `joinQueue` returns `async ()` (no identifier). The frontend query hook `useGetQueueStatus` expects `actor.getQueueStatus(serviceId)` to return only a `bigint` (position) rather than a richer status object containing `serviceId` and `state`. Also, no stable storage (`stable var` / preupgrade/postupgrade) is evidenced in the shown backend snippet.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/hooks/useQueries.ts"
+      ]
+    },
+    {
+      "id": "REQ-2",
+      "requirement": "Admin/staff queue controls must include advance/serve next, mark entry as no-show/cancelled, and reset/clear a service queue, with admin-only authorization protection.",
+      "reason": "Frontend includes hooks/actions for serving next and marking no-show, but the backend diff excerpt does not show implementations for advance/serve, no-show/cancel, or reset/clear operations, nor does it explicitly show an admin allowlist stored in backend state/config (beyond importing access control). Because backend/main.mo is truncated, these capabilities are not verifiable from the provided diff summary.",
+      "evidence": [
+        "backend/main.mo (truncated)",
+        "frontend/src/features/admin/AdminPage.tsx (truncated)",
+        "frontend/src/hooks/useQueries.ts (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-3",
+      "requirement": "Feedback APIs: submit feedback (bounded rating + optional comment + timestamp) and list feedback per service ordered newest-first; persisted in stable storage across upgrades.",
+      "reason": "The backend snippet defines `Feedback` type and a `feedbacks` map, and the frontend calls `useSubmitFeedback`/`useGetServiceFeedback`, but the actual backend methods for submitting/listing feedback and any stable persistence mechanism are not evidenced in the provided backend excerpt (truncated). Ordering newest-first is implemented client-side in AdminPage, but server-side ordering/persistence is not verifiable.",
+      "evidence": [
+        "backend/main.mo (truncated)",
+        "frontend/src/features/admin/AdminPage.tsx (truncated)",
+        "frontend/src/hooks/useQueries.ts (truncated)"
+      ]
+    },
+    {
+      "id": "REQ-8",
+      "requirement": "Add required generated images under frontend/public/assets/generated with specified filenames and use at least the logo in the header and the hero on the home screen.",
+      "reason": "The UI references the logo and hero file paths, but the diff summary does not show the required image files being added under `frontend/public/assets/generated` (added files list does not include them; some files are omitted due to limits, so existence cannot be confirmed).",
+      "evidence": [
+        "frontend/src/components/layout/AppLayout.tsx",
+        "frontend/src/components/auth/AuthGate.tsx",
+        "frontend/src/pages/HomePage.tsx"
+      ]
+    }
+  ],
+  "hallucinated_features": [
+    {
+      "description": "User profile management (profile setup dialog, save/view user profiles) added to both frontend and backend.",
+      "reason": "BuildRequest does not mention user profiles or requiring a name/profile setup flow; it only specifies queue + feedback + admin controls with Internet Identity auth.",
+      "evidence": [
+        "backend/main.mo",
+        "frontend/src/components/auth/ProfileSetupDialog.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/App.tsx"
+      ]
+    },
+    {
+      "description": "Secret admin token initialization via URL parameter `caffeineAdminToken` and backend method `_initializeAccessControlWithSecret`.",
+      "reason": "BuildRequest asks for admin-only operations protected by authorization (e.g., allowlist of admin principals) but does not request a secret token passed via URL/session to initialize access control.",
+      "evidence": [
+        "frontend/src/hooks/useActor.ts",
+        "frontend/src/utils/urlParams.ts"
+      ]
+    },
+    {
+      "description": "ThemeProvider integration via `next-themes` and system theme toggling behavior.",
+      "reason": "BuildRequest asks for a cohesive visual theme (palette/typography/layout) but does not request `next-themes` or theme system integration.",
+      "evidence": [
+        "frontend/src/App.tsx"
+      ]
+    }
+  ],
+  "confidence": 0.62,
+  "changed_files": [
+    "all_files_summary.json",
+    "backend/main.mo",
+    "frontend-file-summaries.txt",
+    "frontend/index.css",
+    "frontend/index.html",
+    "frontend/src/App.tsx",
+    "frontend/src/components/auth/AccessDeniedScreen.tsx",
+    "frontend/src/components/auth/AuthGate.tsx",
+    "frontend/src/components/auth/LoginButton.tsx",
+    "frontend/src/components/auth/ProfileSetupDialog.tsx",
+    "frontend/src/components/layout/AppLayout.tsx",
+    "frontend/src/features/admin/AdminPage.tsx",
+    "frontend/src/features/feedback/FeedbackPage.tsx",
+    "frontend/src/features/queue/QueuePage.tsx",
+    "frontend/src/hooks/useActor.ts",
+    "frontend/src/hooks/useInternetIdentity.ts",
+    "frontend/src/hooks/useQueries.ts",
+    "frontend/src/index.css",
+    "frontend/src/main.tsx",
+    "frontend/src/pages/HomePage.tsx",
+    "frontend/src/utils/urlParams.ts",
+    "frontend/tailwind.config.js",
+    "project_state.json"
+  ]
+}

@@ -1,0 +1,112 @@
+{
+  "kind": "feature_evidence_report",
+  "features": [
+    {
+      "featureId": "feature-build-a-user-facing-frontend-that-lets-users-1-select-a-service-2-join-the-queue-3-view-live-refreshed-queue-status-position-status-and-4-leave-the-queue",
+      "featureTitle": "Build a user-facing frontend that lets users: (1) select a service, (2) join the queue, (3) view live-refreshed queue status (position + status), and (4) leave the queue.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/auth/AuthGate.tsx",
+        "frontend/src/components/auth/LoginButton.tsx",
+        "frontend/src/components/auth/ProfileSetupDialog.tsx",
+        "frontend/src/features/queue/QueuePage.tsx",
+        "frontend/src/hooks/useActor.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-4"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-build-a-user-facing-feedback-ui-users-can-select-a-service-submit-a-rating-and-optional-comment-and-see-a-confirmation-receipt-state-after-successful-submission",
+      "featureTitle": "Build a user-facing feedback UI: users can select a service, submit a rating and optional comment, and see a confirmation/receipt state after successful submission.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/features/feedback/FeedbackPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-5"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-an-admin-staff-frontend-area-to-manage-queues-and-review-feedback-choose-a-service-view-current-queue-entries-advance-serve-next-mark-no-show-cancel-clear-queue-and-view-feedback-list",
+      "featureTitle": "Add an admin/staff frontend area to manage queues and review feedback: choose a service, view current queue entries, advance/serve next, mark no-show/cancel, clear queue, and view feedback list.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/auth/AccessDeniedScreen.tsx",
+        "frontend/src/features/admin/AdminPage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-6"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-apply-a-cohesive-creative-visual-theme-across-the-frontend-colors-typography-spacing-and-components-suitable-for-a-service-queue-product-avoiding-blue-purple-as-primary-brand-colors",
+      "featureTitle": "Apply a cohesive, creative visual theme across the frontend (colors, typography, spacing, and components) suitable for a “service queue” product, avoiding blue/purple as primary brand colors.",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/layout/AppLayout.tsx",
+        "frontend/src/index.css"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-7"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-add-required-static-generated-images-to-the-frontend-and-render-them-in-the-ui-store-under-frontend-public-assets-generated",
+      "featureTitle": "Add required static generated images to the frontend and render them in the UI (store under frontend/public/assets/generated).",
+      "files": [
+        "frontend/src/App.tsx",
+        "frontend/src/components/layout/AppLayout.tsx",
+        "frontend/src/features/queue/QueuePage.tsx"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-8"
+      ],
+      "confidence": "high"
+    }
+  ]
+}
