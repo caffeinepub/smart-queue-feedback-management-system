@@ -1,16 +1,15 @@
 # Specification
 
 ## Summary
-**Goal:** Deliver an MVP smart queue and feedback management system with a user-facing app, an admin/staff management area, and stable, deterministic backend queue/feedback persistence.
+**Goal:** Add a frontend-only Local Storage Mode that runs the queue and feedback features end-to-end using browser localStorage, including token generation, live updates, and staff call/complete actions.
 
 **Planned changes:**
-- Backend: data models + APIs to create/list services; join/leave a service queue; fetch a user’s queue status (position + state); fetch a service queue snapshot with deterministic FIFO ordering persisted in stable storage.
-- Backend: admin/staff queue controls to advance/serve next, mark no-show/cancel, and clear a service queue with admin-only authorization (allowlisted principals).
-- Backend: feedback APIs to submit service feedback (rating + optional comment + timestamp) and list feedback per service (newest first) with stable persistence.
-- Frontend: user flow to select a service, join queue, view live-refreshed queue status via polling + manual refresh, and leave queue.
-- Frontend: feedback flow to select a service, submit rating + optional comment, show actionable English errors, and show a confirmation state on success.
-- Frontend: admin/staff area to select service, view ordered queue entries, perform queue actions, and review feedback; hide/disable admin features for unauthorized users with a clear English message.
-- Frontend: cohesive creative visual theme (no blue/purple as primary brand colors) across Queue, Feedback, and Admin views.
-- Frontend: add required generated static images under `frontend/public/assets/generated` and render logo in header and hero on landing/home.
+- Add a clearly labeled Local Storage Mode toggle/config option that switches queue + feedback operations from canister calls to localStorage-backed logic.
+- Define and implement a versioned, namespaced (e.g., `sqfm:`) localStorage schema; load local data on app start and reflect it in the UI without page refresh.
+- Implement per-service, human-friendly token number generation for queue entries in Local Storage Mode, persisting token counters across reloads.
+- Implement live queue display behavior in Local Storage Mode for both user and staff/admin views (auto-updating when entries change).
+- Add/enable staff/admin controls in Local Storage Mode for “Next customer call” and “Service completion,” supporting statuses: waiting, served/completed, cancelled, no-show.
+- Persist feedback submissions (rating 1–5 + optional comment + timestamp + service id) in localStorage in Local Storage Mode and list them in the existing staff/admin feedback review UI (newest-first or otherwise clearly ordered).
+- Add developer documentation describing Local Storage Mode, localStorage keys/payloads, token generation, status meanings, and how to reset local data for testing (via UI and/or browser devtools).
 
-**User-visible outcome:** Users can join a service queue, see their current position/status with periodic refresh, leave the queue, and submit feedback; authorized staff can manage queues (advance/no-show/cancel/clear) and review feedback per service in an admin area.
+**User-visible outcome:** Users and staff can run queueing and feedback entirely in the browser (even if the backend is unavailable) by enabling Local Storage Mode, with token numbers, live queue updates, staff call/complete flow, and reviewable feedback.

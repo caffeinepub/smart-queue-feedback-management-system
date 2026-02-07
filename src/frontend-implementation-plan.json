@@ -1,187 +1,189 @@
 {
   "kind": "implementation_plan",
   "version": "1.0",
-  "title": "Smart Queue & Feedback Management System MVP (Frontend)",
+  "title": "LocalStorage-backed queue + feedback mode (tokens, live updates, staff call/complete)",
   "requirements": [
     {
-      "id": "REQ-4",
-      "summary": "User queue flow: select a service, join/leave queue, and view live-refreshed queue status (position + status) with manual refresh.",
+      "id": "REQ-9",
+      "summary": "Add a frontend-only Local Storage Mode toggle that switches queue + feedback reads/writes from backend calls to versioned, namespaced localStorage with safe startup loading and empty-state recovery.",
       "acceptanceCriteria": [
-        "There is a clear flow to select a service and join its queue.",
-        "After joining, the UI displays the user’s current position and status state.",
-        "The UI provides a cancel/leave action and updates state after completion.",
-        "Queue status view refreshes via polling (React Query) at a reasonable interval (e.g., every 5–10 seconds) and supports manual refresh."
+        "A single, clearly labeled toggle or configuration option exists to run queue + feedback using localStorage (instead of canister calls).",
+        "When Local Storage Mode is enabled, joining/leaving/serving queue and submitting/viewing feedback work end-to-end even if the backend actor is unavailable.",
+        "All localStorage keys are namespaced (e.g., \"sqfm:\") and versioned to allow future migrations.",
+        "Local data is loaded on app start and reflected in the UI without requiring a page refresh."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/features/localStorageMode/useLocalStorageMode.ts",
           "operation": "create",
-          "description": "Create the app shell with primary navigation between Queue, Feedback, and Admin areas; integrate authentication gating per the selected authorization component (require login before showing application data). Verify the component's usage instructions before implementing."
+          "description": "Implement a small state hook that persists the Local Storage Mode flag in localStorage (namespaced + versioned) and exposes enable/disable + reset helpers; ensure all user-facing text is in English."
         },
         {
-          "path": "frontend/src/components/auth/AuthGate.tsx",
+          "path": "frontend/src/utils/sqfmLocalStorage.ts",
           "operation": "create",
-          "description": "Add an AuthGate that uses Internet Identity state to require login before rendering queue data; show a clear English prompt to log in. Verify the component's usage instructions before implementing."
+          "description": "Add a versioned, namespaced localStorage utility for queue + feedback (and any required cached service metadata) with: schema version constant, key builders (e.g., \"sqfm:v1:...\") , JSON parsing with corruption handling (falls back to empty + returns a recoverable warning message), and a write helper that broadcasts a custom in-app event for live UI updates."
         },
         {
-          "path": "frontend/src/components/auth/LoginButton.tsx",
+          "path": "frontend/src/components/localStorageMode/LocalStorageModeControl.tsx",
           "operation": "create",
-          "description": "Add a Login/Logout button that uses the authorization component’s recommended Internet Identity flow and clears React Query cache on logout. Verify the component's usage instructions before implementing."
+          "description": "Add a clearly labeled UI control (toggle + status + reset button) for Local Storage Mode, including an in-app 'Reset local data' action; show a concise English warning that Local Storage Mode is developer-focused and uses browser storage."
         },
         {
-          "path": "frontend/src/components/auth/ProfileSetupDialog.tsx",
-          "operation": "create",
-          "description": "Add a first-login profile setup dialog (collect name) using getCallerUserProfile/saveCallerUserProfile to avoid showing principal IDs; ensure no modal flash per guidance. Verify the component's usage instructions before implementing."
+          "path": "frontend/src/components/layout/AppLayout.tsx",
+          "operation": "modify",
+          "description": "Wire LocalStorageModeControl into the header area (desktop + mobile) so the toggle is always discoverable; keep existing navigation and authentication intact."
         },
         {
-          "path": "frontend/src/features/services/useServices.ts",
-          "operation": "create",
-          "description": "Create a React Query hook to fetch and cache listServices for service selection; ensure queries are enabled only when the backend actor is available."
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Add a Local Storage Mode switch layer so queue + feedback hooks use localStorage-backed capabilities when enabled (without changing default canister-backed behavior when disabled); integrate safe fallback behavior when the backend actor is unavailable and Local Storage Mode is enabled."
+        }
+      ]
+    },
+    {
+      "id": "REQ-10",
+      "summary": "Generate and persist human-friendly per-service token numbers for queue entries in Local Storage Mode and display them consistently in user and staff/admin views.",
+      "acceptanceCriteria": [
+        "When a user joins a service queue in Local Storage Mode, they are assigned the next token number for that service (monotonically increasing).",
+        "The user can see their token number in the Queue page alongside their position/status.",
+        "The Admin/Staff queue table shows token numbers for entries in Local Storage Mode.",
+        "Token counters persist across reloads via localStorage (per service)."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/sqfmLocalStorage.ts",
+          "operation": "modify",
+          "description": "Extend the localStorage schema to store per-service token counters and queue entries including token number; implement atomic-style 'next token' allocation per service and persistence using namespaced, versioned keys."
         },
         {
-          "path": "frontend/src/features/queue/useQueue.ts",
-          "operation": "create",
-          "description": "Create React Query hooks for joinQueue, leaveQueue, and queue status retrieval; include polling (e.g., 7s) and a manual refresh function; derive user position + status by combining queue snapshot with current identity principal."
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Update Local Storage Mode queue-join capability to allocate a token (per service) and store it with the queue entry; ensure the same token is returned/derived consistently on subsequent reads."
         },
         {
           "path": "frontend/src/features/queue/QueuePage.tsx",
-          "operation": "create",
-          "description": "Build the user Queue UI: service selector, join button, live status card (position + status), manual refresh control, and leave/cancel action; show English errors from backend traps in a user-friendly way; use shadcn-ui components by composition only (do not edit immutable ui paths). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/hooks/useActor.ts",
           "operation": "modify",
-          "description": "Ensure actor-dependent queries used by queue UI behave correctly across login/logout (including cache invalidation) and provide a stable actor reference for React Query hooks."
-        }
-      ]
-    },
-    {
-      "id": "REQ-5",
-      "summary": "User feedback flow: select a service, submit rating + optional comment, and show confirmation after success with clear error handling.",
-      "acceptanceCriteria": [
-        "Feedback form includes a rating control and a comment field (comment optional).",
-        "Submission errors are shown in English with actionable guidance.",
-        "On success, the form resets and shows a confirmation message in English."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/features/feedback/useFeedback.ts",
-          "operation": "create",
-          "description": "Create React Query mutation hook for submitFeedback and query hook for listServices (reuse services hook) to support selecting a service and submitting feedback; handle and normalize errors into clear English messages."
-        },
-        {
-          "path": "frontend/src/features/feedback/FeedbackPage.tsx",
-          "operation": "create",
-          "description": "Build feedback UI with service selector, rating control, optional comment field, submit button, success confirmation/receipt state, and error display; use shadcn-ui components by composition only (do not edit immutable ui paths). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/App.tsx",
-          "operation": "modify",
-          "description": "Wire FeedbackPage into the app’s primary navigation and ensure it is protected by the AuthGate (login required before showing application data). Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-6",
-      "summary": "Admin/staff area: manage queue (view entries, serve next, no-show/cancel, clear) and review feedback per service with authorization-aware UI behavior.",
-      "acceptanceCriteria": [
-        "Admin view shows a service selector and a queue list (ordered) with each entry’s state.",
-        "Admin actions (advance, no-show/cancel, clear) trigger backend updates and the UI reflects changes.",
-        "Admin view includes a feedback list per service (rating, comment, timestamp).",
-        "If the user is not authorized as admin, admin actions are disabled or the admin view is hidden with a clear English message."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/src/features/admin/useAdmin.ts",
-          "operation": "create",
-          "description": "Create React Query hooks for admin capabilities: isCallerAdmin, getQueueSnapshot (polling), serveNext, markNoShow, leave/cancel (as no-show/cancel action), and getServiceFeedback; include cache invalidation so lists refresh after mutations."
+          "description": "In Local Storage Mode, display the user's token number alongside their position/status; ensure the token display remains stable across reloads."
         },
         {
           "path": "frontend/src/features/admin/AdminPage.tsx",
-          "operation": "create",
-          "description": "Build Admin UI: service selector, ordered queue list with entry state, action buttons (serve next, mark no-show/cancel per entry, clear queue), and feedback list (rating/comment/timestamp); hide or disable admin actions when not authorized and show a clear English message; use shadcn-ui components by composition only (do not edit immutable ui paths). Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/auth/AccessDeniedScreen.tsx",
-          "operation": "create",
-          "description": "Add a reusable AccessDeniedScreen for unauthorized admin access with clear English messaging and a path back to user areas. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/App.tsx",
           "operation": "modify",
-          "description": "Wire AdminPage into the app navigation and gate it behind an admin check (isCallerAdmin); show AccessDeniedScreen or disable admin controls for non-admin users. Verify the component's usage instructions before implementing."
+          "description": "In Local Storage Mode, add a Token column (or equivalent) to the staff/admin queue table so token numbers are visible for each entry."
         }
       ]
     },
     {
-      "id": "REQ-7",
-      "summary": "Apply a cohesive visual theme across the frontend (non-blue/purple primary), with consistent layout and component styling across Queue, Feedback, and Admin areas.",
+      "id": "REQ-11",
+      "summary": "Provide live-updating queue displays in Local Storage Mode (user status/position and staff queue list) using polling and/or storage/event-based updates with safe empty-state messaging on cleared/corrupt storage.",
       "acceptanceCriteria": [
-        "The app uses a consistent palette (primary/secondary/background/text) and typographic scale across pages.",
-        "Primary brand color is not blue or purple.",
-        "Layout is consistent (header/nav, content widths, card styles) across Queue, Feedback, and Admin areas."
+        "In Local Storage Mode, the Queue page updates the displayed position/status without manual refresh (polling or event-based update is acceptable).",
+        "In Local Storage Mode, the Admin/Staff queue list updates when entries are added/served/completed/no-show/cancelled without requiring a full page reload.",
+        "If localStorage is cleared or corrupted, the UI falls back to a safe empty state with clear user-facing messaging in English."
       ],
       "file_operations": [
         {
-          "path": "frontend/src/index.css",
-          "operation": "create",
-          "description": "Define global theme styles (typography scale, spacing rhythm, and a warm neutral palette with teal/orange accents) ensuring the primary brand color is not blue or purple; integrate with Tailwind/shadcn-ui theming via CSS variables where applicable. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/layout/AppLayout.tsx",
-          "operation": "create",
-          "description": "Create a shared layout (header with logo + nav, consistent content width, consistent card/section spacing) used by Queue, Feedback, and Admin pages; compose shadcn-ui components without editing immutable ui paths. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/utils/sqfmLocalStorage.ts",
           "operation": "modify",
-          "description": "Adopt AppLayout for all areas and ensure consistent header/nav and page structure across Queue, Feedback, and Admin. Verify the component's usage instructions before implementing."
-        }
-      ]
-    },
-    {
-      "id": "REQ-8",
-      "summary": "Add required generated static images under frontend/public/assets/generated and render logo in header, hero on home screen, and empty-state illustration in relevant UI states.",
-      "acceptanceCriteria": [
-        "All required generated images exist under frontend/public/assets/generated with the specified filenames.",
-        "At least the logo is used in the app header and the hero illustration is used on the landing/home screen.",
-        "Images are loaded as static assets (no backend image serving)."
-      ],
-      "file_operations": [
-        {
-          "path": "frontend/public/assets/generated/sqfm-logo.dim_256x256.png",
-          "operation": "create",
-          "description": "Add the required generated logo asset at frontend/public/assets/generated/sqfm-logo.dim_256x256.png."
+          "description": "Add a lightweight change-notification mechanism for Local Storage Mode (e.g., dispatch a custom window event after writes; also handle the browser 'storage' event) and expose a helper to subscribe/unsubscribe."
         },
         {
-          "path": "frontend/public/assets/generated/sqfm-hero.dim_1200x600.png",
-          "operation": "create",
-          "description": "Add the required generated hero illustration asset at frontend/public/assets/generated/sqfm-hero.dim_1200x600.png."
-        },
-        {
-          "path": "frontend/public/assets/generated/sqfm-empty-state.dim_512x512.png",
-          "operation": "create",
-          "description": "Add the required generated empty-state illustration asset at frontend/public/assets/generated/sqfm-empty-state.dim_512x512.png."
-        },
-        {
-          "path": "frontend/src/components/layout/AppLayout.tsx",
+          "path": "frontend/src/hooks/useQueries.ts",
           "operation": "modify",
-          "description": "Render the static logo in the app header using frontend/public/assets/generated/sqfm-logo.dim_256x256.png; ensure it appears consistently across Queue, Feedback, and Admin areas. Verify the component's usage instructions before implementing."
-        },
-        {
-          "path": "frontend/src/components/home/HomeHero.tsx",
-          "operation": "create",
-          "description": "Create a landing/home hero section that renders frontend/public/assets/generated/sqfm-hero.dim_1200x600.png and brief English guidance for using the app; keep it within existing app shell (do not introduce additional top-level routes beyond what App.tsx provides). Verify the component's usage instructions before implementing."
+          "description": "For Local Storage Mode queries (queue snapshot, user queue status, feedback lists), add event-based invalidation and/or short-interval polling so UI updates without manual refresh; ensure corruption/cleared storage returns empty data plus a user-facing warning string that pages can render."
         },
         {
           "path": "frontend/src/features/queue/QueuePage.tsx",
           "operation": "modify",
-          "description": "Use the empty-state illustration frontend/public/assets/generated/sqfm-empty-state.dim_512x512.png in the 'No active queue' UI state with clear English text and a call-to-action to join a service queue. Verify the component's usage instructions before implementing."
+          "description": "When Local Storage Mode is enabled, keep the queue status/position view live-updating via the local mode query behavior; if local storage data is missing/corrupt, render a safe empty state with clear English messaging (and keep the rest of the page usable)."
         },
         {
-          "path": "frontend/src/App.tsx",
+          "path": "frontend/src/features/admin/AdminPage.tsx",
           "operation": "modify",
-          "description": "Wire HomeHero into the initial view/landing area within the main app shell so the hero illustration is visible on the landing/home screen. Verify the component's usage instructions before implementing."
+          "description": "When Local Storage Mode is enabled, keep the staff/admin queue list live-updating via the local mode query behavior; if local storage data is missing/corrupt, render a safe empty state with clear English messaging."
+        }
+      ]
+    },
+    {
+      "id": "REQ-12",
+      "summary": "In Local Storage Mode, implement staff controls to call the next waiting token and then explicitly mark that called entry as served/completed, while supporting waiting/served/cancelled/no-show statuses and correct position/status updates for users.",
+      "acceptanceCriteria": [
+        "In Local Storage Mode, the Admin/Staff view can call the next customer (advances the queue by selecting the oldest waiting entry).",
+        "After calling next, staff can mark the called entry as completed/served via an explicit action (or via an equivalent flow if call-next immediately serves, then UI must clearly represent ‘served/completed’ state).",
+        "Queue entry statuses in Local Storage Mode support at least: waiting, served/completed, cancelled, no-show (matching the UI expectations).",
+        "The user’s position/status updates appropriately when entries ahead are served/completed/no-show/cancelled."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/sqfmLocalStorage.ts",
+          "operation": "modify",
+          "description": "Add Local Storage Mode queue mutation helpers to: find the oldest 'waiting' entry (call-next), set an entry to 'served' (explicit completion), and set statuses to 'cancelled'/'noShow' while maintaining joinedAt ordering and consistent token retention."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Implement Local Storage Mode variants for staff queue actions used by AdminPage (call-next, mark served/completed, mark no-show) and user actions (leave/cancel); ensure these operations trigger live UI updates through the local change-notification mechanism."
+        },
+        {
+          "path": "frontend/src/features/admin/AdminPage.tsx",
+          "operation": "modify",
+          "description": "In Local Storage Mode, adapt the existing workflow so staff can (1) call next waiting entry and (2) explicitly mark the called entry as served/completed; keep the existing canister-backed workflow unchanged when Local Storage Mode is disabled."
+        },
+        {
+          "path": "frontend/src/features/queue/QueuePage.tsx",
+          "operation": "modify",
+          "description": "In Local Storage Mode, compute and display the user's current status (waiting/served/cancelled/no-show) and position among waiting entries; ensure position/status updates when entries ahead change status."
+        }
+      ]
+    },
+    {
+      "id": "REQ-13",
+      "summary": "Persist feedback submissions in localStorage in Local Storage Mode (rating, optional comment, timestamp, service id) and show them in the Admin/Staff feedback list for the selected service with validation and success UI unchanged.",
+      "acceptanceCriteria": [
+        "In Local Storage Mode, submitting feedback stores rating (1–5), comment text, timestamp, and associated service identifier in localStorage.",
+        "The existing feedback success/receipt UI still appears after successful local submission.",
+        "In Local Storage Mode, the Admin/Staff feedback review tab lists locally stored feedback for the selected service and sorts newest-first (or clearly documented order).",
+        "Input validation remains: service required, rating required and constrained to 1–5; comment optional."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/src/utils/sqfmLocalStorage.ts",
+          "operation": "modify",
+          "description": "Add Local Storage Mode feedback storage helpers to append submissions (service id, rating 1–5, optional comment, timestamp, and a stable user identifier string) and read back feedback by service id; keep keys namespaced + versioned."
+        },
+        {
+          "path": "frontend/src/hooks/useQueries.ts",
+          "operation": "modify",
+          "description": "Implement Local Storage Mode variants for submitFeedback and getServiceFeedback; preserve existing validation behavior (service required, rating 1–5) and return newest-first ordering (or sort in the consuming page)."
+        },
+        {
+          "path": "frontend/src/features/feedback/FeedbackPage.tsx",
+          "operation": "modify",
+          "description": "Route feedback submission through Local Storage Mode when enabled while keeping the current success/receipt UI and validation in English; ensure submission works even if the backend actor is unavailable."
+        },
+        {
+          "path": "frontend/src/features/admin/AdminPage.tsx",
+          "operation": "modify",
+          "description": "When Local Storage Mode is enabled, load and display locally stored feedback for the selected service in the existing Feedback Review tab, sorted newest-first."
+        }
+      ]
+    },
+    {
+      "id": "REQ-14",
+      "summary": "Add developer-facing documentation for Local Storage Mode, including localStorage keys/schema, token generation rules, status meanings, and reset instructions.",
+      "acceptanceCriteria": [
+        "A documentation file is added to the repo describing Local Storage Mode behavior and data model (keys, example payloads, and status meanings).",
+        "Documentation includes steps to clear/reset local queue + feedback data from within the app UI and/or via browser devtools."
+      ],
+      "file_operations": [
+        {
+          "path": "frontend/LOCAL_STORAGE_MODE.md",
+          "operation": "create",
+          "description": "Document Local Storage Mode: how to enable/disable, the versioned key namespace (e.g., \"sqfm:v1:*\"), queue entry schema (including token + statuses), token generation rules (per-service monotonically increasing), feedback schema, how live updates work, and how to reset via the in-app reset control and via browser devtools (all in English)."
+        },
+        {
+          "path": "frontend/src/components/localStorageMode/LocalStorageModeControl.tsx",
+          "operation": "modify",
+          "description": "Add a brief inline hint/link-style text near the reset control that tells developers how to manually clear local data in browser devtools (English only) and references the documentation file path."
         }
       ]
     }

@@ -1,175 +1,132 @@
 {
   "kind": "build_request",
-  "title": "Smart Queue & Feedback Management System MVP",
+  "title": "Add localStorage-backed queue + feedback (token generation, live queue display, staff call/complete)",
   "priority": "normal",
   "requirements": [
     {
-      "id": "REQ-1",
-      "text": "Implement backend data models and APIs for a digital queue: create/list services, join a service queue, leave a queue, fetch a user’s current queue status (position + state), and fetch the current queue snapshot for a service.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "SMART QUEUE & FEEDBACK MANAGEMENT SYSTEM"
-        ]
-      },
-      "acceptanceCriteria": [
-        "A service can be created and is returned by a list-services API.",
-        "A user can join a service queue and receives a queue entry identifier (or equivalent).",
-        "A user can request their status and receive at minimum: serviceId, current position (1-based), and a status state (e.g., waiting/served/cancelled).",
-        "A user can leave/cancel their queue entry and subsequent status calls reflect cancellation.",
-        "Queue order is deterministic (FIFO) and stable across canister upgrades/restarts using stable storage."
-      ]
-    },
-    {
-      "id": "REQ-2",
-      "text": "Implement backend staff/admin queue controls for a service: advance to next customer (serve current), mark an entry as no-show/cancelled, and reset/clear a service queue.",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "Smart Queue"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Advancing the queue updates the head entry to a terminal state (served) and the next waiting entry becomes position 1.",
-        "No-show/cancel operations remove the entry from the waiting order and positions update accordingly.",
-        "Reset/clear removes all active entries for a given service.",
-        "Admin-only operations are authorization-protected (e.g., allowlist of admin principals stored in backend state/config)."
-      ]
-    },
-    {
-      "id": "REQ-3",
-      "text": "Implement backend feedback collection APIs: submit feedback for a service (rating + free-text comment), and list feedback entries per service (admin/staff view).",
-      "target": "backend",
-      "source": {
-        "messageIds": [
-          "msg-1"
-        ],
-        "quotes": [
-          "FEEDBACK MANAGEMENT SYSTEM"
-        ]
-      },
-      "acceptanceCriteria": [
-        "Users can submit feedback containing at minimum: serviceId, rating (bounded numeric), optional comment text, and timestamp.",
-        "Feedback is persisted in stable storage and remains after canister upgrades.",
-        "Admin/staff can list feedback for a given service ordered by newest first."
-      ]
-    },
-    {
-      "id": "REQ-4",
-      "text": "Build a user-facing frontend that lets users: (1) select a service, (2) join the queue, (3) view live-refreshed queue status (position + status), and (4) leave the queue.",
+      "id": "REQ-9",
+      "text": "Add a frontend-only “Local Storage Mode” that persists queue data and feedback data in browser localStorage, so the app can run without depending on backend canister APIs for these functions.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "users can join a digital queue, track their position"
+          "Use local storage to store queue data and feedback."
         ]
       },
       "acceptanceCriteria": [
-        "There is a clear flow to select a service and join its queue.",
-        "After joining, the UI displays the user’s current position and status state.",
-        "The UI provides a cancel/leave action and updates state after completion.",
-        "Queue status view refreshes via polling (React Query) at a reasonable interval (e.g., every 5–10 seconds) and supports manual refresh."
+        "A single, clearly labeled toggle or configuration option exists to run queue + feedback using localStorage (instead of canister calls).",
+        "When Local Storage Mode is enabled, joining/leaving/serving queue and submitting/viewing feedback work end-to-end even if the backend actor is unavailable.",
+        "All localStorage keys are namespaced (e.g., \"sqfm:\") and versioned to allow future migrations.",
+        "Local data is loaded on app start and reflected in the UI without requiring a page refresh."
       ]
     },
     {
-      "id": "REQ-5",
-      "text": "Build a user-facing feedback UI: users can select a service, submit a rating and optional comment, and see a confirmation/receipt state after successful submission.",
+      "id": "REQ-10",
+      "text": "Implement token generation for queue entries in Local Storage Mode: each service queue entry receives a human-friendly token number that increments per service and is displayed consistently across user and staff/admin views.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "submit feedback for services"
+          "Features should include token generation, live queue display, next customer call, service completion..."
         ]
       },
       "acceptanceCriteria": [
-        "Feedback form includes a rating control and a comment field (comment optional).",
-        "Submission errors are shown in English with actionable guidance.",
-        "On success, the form resets and shows a confirmation message in English."
+        "When a user joins a service queue in Local Storage Mode, they are assigned the next token number for that service (monotonically increasing).",
+        "The user can see their token number in the Queue page alongside their position/status.",
+        "The Admin/Staff queue table shows token numbers for entries in Local Storage Mode.",
+        "Token counters persist across reloads via localStorage (per service)."
       ]
     },
     {
-      "id": "REQ-6",
-      "text": "Add an admin/staff frontend area to manage queues and review feedback: choose a service, view current queue entries, advance/serve next, mark no-show/cancel, clear queue, and view feedback list.",
+      "id": "REQ-11",
+      "text": "Add a live queue display experience in Local Storage Mode that mirrors the current canister-backed behavior: users can see their position/status update automatically and staff can see the current queue list update automatically.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "Smart Queue",
-          "Feedback Management"
+          "Features should include ... live queue display ..."
         ]
       },
       "acceptanceCriteria": [
-        "Admin view shows a service selector and a queue list (ordered) with each entry’s state.",
-        "Admin actions (advance, no-show/cancel, clear) trigger backend updates and the UI reflects changes.",
-        "Admin view includes a feedback list per service (rating, comment, timestamp).",
-        "If the user is not authorized as admin, admin actions are disabled or the admin view is hidden with a clear English message."
+        "In Local Storage Mode, the Queue page updates the displayed position/status without manual refresh (polling or event-based update is acceptable).",
+        "In Local Storage Mode, the Admin/Staff queue list updates when entries are added/served/completed/no-show/cancelled without requiring a full page reload.",
+        "If localStorage is cleared or corrupted, the UI falls back to a safe empty state with clear user-facing messaging in English."
       ]
     },
     {
-      "id": "REQ-7",
-      "text": "Apply a cohesive, creative visual theme across the frontend (colors, typography, spacing, and components) suitable for a “service queue” product, avoiding blue/purple as primary brand colors.",
+      "id": "REQ-12",
+      "text": "In Local Storage Mode, add staff controls for “Next customer call” and “Service completion” aligned to the existing admin workflow, ensuring the next waiting token can be called and then marked completed/served.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "SMART QUEUE & FEEDBACK MANAGEMENT SYSTEM"
+          "Features should include ... next customer call, service completion ..."
         ]
       },
       "acceptanceCriteria": [
-        "The app uses a consistent palette (primary/secondary/background/text) and typographic scale across pages.",
-        "Primary brand color is not blue or purple.",
-        "Layout is consistent (header/nav, content widths, card styles) across Queue, Feedback, and Admin areas."
+        "In Local Storage Mode, the Admin/Staff view can call the next customer (advances the queue by selecting the oldest waiting entry).",
+        "After calling next, staff can mark the called entry as completed/served via an explicit action (or via an equivalent flow if call-next immediately serves, then UI must clearly represent ‘served/completed’ state).",
+        "Queue entry statuses in Local Storage Mode support at least: waiting, served/completed, cancelled, no-show (matching the UI expectations).",
+        "The user’s position/status updates appropriately when entries ahead are served/completed/no-show/cancelled."
       ]
     },
     {
-      "id": "REQ-8",
-      "text": "Add required static generated images to the frontend and render them in the UI (store under frontend/public/assets/generated).",
+      "id": "REQ-13",
+      "text": "Persist feedback submissions (rating + optional comment) in localStorage in Local Storage Mode, and make them reviewable from the Admin/Staff feedback list UI for the selected service.",
       "target": "frontend",
       "source": {
         "messageIds": [
           "msg-1"
         ],
         "quotes": [
-          "SMART QUEUE & FEEDBACK MANAGEMENT SYSTEM"
+          "...and a feedback form with rating and comments. Use local storage to store queue data and feedback."
         ]
       },
       "acceptanceCriteria": [
-        "All required generated images exist under frontend/public/assets/generated with the specified filenames.",
-        "At least the logo is used in the app header and the hero illustration is used on the landing/home screen.",
-        "Images are loaded as static assets (no backend image serving)."
+        "In Local Storage Mode, submitting feedback stores rating (1–5), comment text, timestamp, and associated service identifier in localStorage.",
+        "The existing feedback success/receipt UI still appears after successful local submission.",
+        "In Local Storage Mode, the Admin/Staff feedback review tab lists locally stored feedback for the selected service and sorts newest-first (or clearly documented order).",
+        "Input validation remains: service required, rating required and constrained to 1–5; comment optional."
+      ]
+    },
+    {
+      "id": "REQ-14",
+      "text": "Add developer-facing documentation explaining Local Storage Mode, including the localStorage schema/keys, how tokens are generated, and how to manually reset local data for testing.",
+      "target": "frontend",
+      "source": {
+        "messageIds": [
+          "msg-1"
+        ],
+        "quotes": [
+          "Provide full source code with clear explanation"
+        ]
+      },
+      "acceptanceCriteria": [
+        "A documentation file is added to the repo describing Local Storage Mode behavior and data model (keys, example payloads, and status meanings).",
+        "Documentation includes steps to clear/reset local queue + feedback data from within the app UI and/or via browser devtools."
       ]
     }
   ],
   "constraints": [
-    "Use English for all user-facing text.",
-    "Backend must remain a single Motoko actor (no additional backend services).",
-    "Do not edit files under frontend/src/components/ui or other immutable paths; compose UI components instead."
+    "Do not edit files under frontend/src/hooks/useInternetIdentity.ts, frontend/src/hooks/useInternetIdentity.tsx, frontend/src/hooks/useActor.ts, frontend/src/main.tsx, or anything in frontend/src/components/ui; compose them instead.",
+    "Keep the backend as a single Motoko actor (backend/main.mo); do not introduce additional backend services.",
+    "All user-facing text added/changed must be in English."
   ],
   "nonGoals": [
-    "Payments, ticket scanning/QR codes, SMS/email notifications.",
-    "Real-time WebSocket updates (use polling/refresh instead).",
-    "Third-party authentication providers other than Internet Identity."
+    "Do not rewrite the application as a non-React plain HTML/CSS/JavaScript site; implement the requested behavior within the existing React + TypeScript app.",
+    "Do not remove or replace Internet Identity authentication; Local Storage Mode may operate without backend calls, but existing auth paths should remain intact.",
+    "Do not change existing canister-backed queue/feedback behavior unless required to add the Local Storage Mode toggle/configuration."
   ],
   "imageRequirements": {
-    "required": [
-      "Minimal modern logo mark featuring a queue/ticket motif (sqfm-logo.dim_256x256.png)",
-      "Wide hero illustration showing people in an organized line with abstract UI elements, warm neutral palette with teal/orange accents (sqfm-hero.dim_1200x600.png)",
-      "Simple empty-state illustration for ‘No active queue’ (sqfm-empty-state.dim_512x512.png)"
-    ],
+    "required": [],
     "edits": []
   }
 }

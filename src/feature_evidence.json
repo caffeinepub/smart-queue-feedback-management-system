@@ -2,15 +2,36 @@
   "kind": "feature_evidence_report",
   "features": [
     {
-      "featureId": "feature-build-a-user-facing-frontend-that-lets-users-1-select-a-service-2-join-the-queue-3-view-live-refreshed-queue-status-position-status-and-4-leave-the-queue",
-      "featureTitle": "Build a user-facing frontend that lets users: (1) select a service, (2) join the queue, (3) view live-refreshed queue status (position + status), and (4) leave the queue.",
+      "featureId": "feature-add-a-frontend-only-local-storage-mode-that-persists-queue-data-and-feedback-data-in-browser-localstorage-so-the-app-can-run-without-depending-on-backend-canister-apis-for-these-functions",
+      "featureTitle": "Add a frontend-only “Local Storage Mode” that persists queue data and feedback data in browser localStorage, so the app can run without depending on backend canister APIs for these functions.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/auth/AuthGate.tsx",
-        "frontend/src/components/auth/LoginButton.tsx",
-        "frontend/src/components/auth/ProfileSetupDialog.tsx",
+        "frontend/src/components/layout/AppLayout.tsx",
+        "frontend/src/components/localStorageMode/LocalStorageModeControl.tsx",
+        "frontend/src/features/localStorageMode/useLocalStorageMode.ts",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/utils/sqfmLocalStorage.ts"
+      ],
+      "components": [
+        "authorization@4.0.0",
+        "core-infrastructure@1.0.2",
+        "shadcn-ui@1.0.0",
+        "build-template-react@1.0.0",
+        "initial-app@1.0.0",
+        "github-export-icp-cli@1.0.0"
+      ],
+      "testIds": [
+        "REQ-9"
+      ],
+      "confidence": "high"
+    },
+    {
+      "featureId": "feature-implement-token-generation-for-queue-entries-in-local-storage-mode-each-service-queue-entry-receives-a-human-friendly-token-number-that-increments-per-service-and-is-displayed-consistently-across-user-and-staff-admin-views",
+      "featureTitle": "Implement token generation for queue entries in Local Storage Mode: each service queue entry receives a human-friendly token number that increments per service and is displayed consistently across user and staff/admin views.",
+      "files": [
+        "frontend/src/features/admin/AdminPage.tsx",
         "frontend/src/features/queue/QueuePage.tsx",
-        "frontend/src/hooks/useActor.ts"
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/utils/sqfmLocalStorage.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -21,16 +42,18 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-4"
+        "REQ-10"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-build-a-user-facing-feedback-ui-users-can-select-a-service-submit-a-rating-and-optional-comment-and-see-a-confirmation-receipt-state-after-successful-submission",
-      "featureTitle": "Build a user-facing feedback UI: users can select a service, submit a rating and optional comment, and see a confirmation/receipt state after successful submission.",
+      "featureId": "feature-add-a-live-queue-display-experience-in-local-storage-mode-that-mirrors-the-current-canister-backed-behavior-users-can-see-their-position-status-update-automatically-and-staff-can-see-the-current-queue-list-update-automatically",
+      "featureTitle": "Add a live queue display experience in Local Storage Mode that mirrors the current canister-backed behavior: users can see their position/status update automatically and staff can see the current queue list update automatically.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/features/feedback/FeedbackPage.tsx"
+        "frontend/src/features/admin/AdminPage.tsx",
+        "frontend/src/features/queue/QueuePage.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/utils/sqfmLocalStorage.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -41,17 +64,18 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-5"
+        "REQ-11"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-an-admin-staff-frontend-area-to-manage-queues-and-review-feedback-choose-a-service-view-current-queue-entries-advance-serve-next-mark-no-show-cancel-clear-queue-and-view-feedback-list",
-      "featureTitle": "Add an admin/staff frontend area to manage queues and review feedback: choose a service, view current queue entries, advance/serve next, mark no-show/cancel, clear queue, and view feedback list.",
+      "featureId": "feature-in-local-storage-mode-add-staff-controls-for-next-customer-call-and-service-completion-aligned-to-the-existing-admin-workflow-ensuring-the-next-waiting-token-can-be-called-and-then-marked-completed-served",
+      "featureTitle": "In Local Storage Mode, add staff controls for “Next customer call” and “Service completion” aligned to the existing admin workflow, ensuring the next waiting token can be called and then marked completed/served.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/auth/AccessDeniedScreen.tsx",
-        "frontend/src/features/admin/AdminPage.tsx"
+        "frontend/src/features/admin/AdminPage.tsx",
+        "frontend/src/features/queue/QueuePage.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/utils/sqfmLocalStorage.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -62,17 +86,18 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-6"
+        "REQ-12"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-apply-a-cohesive-creative-visual-theme-across-the-frontend-colors-typography-spacing-and-components-suitable-for-a-service-queue-product-avoiding-blue-purple-as-primary-brand-colors",
-      "featureTitle": "Apply a cohesive, creative visual theme across the frontend (colors, typography, spacing, and components) suitable for a “service queue” product, avoiding blue/purple as primary brand colors.",
+      "featureId": "feature-persist-feedback-submissions-rating-optional-comment-in-localstorage-in-local-storage-mode-and-make-them-reviewable-from-the-admin-staff-feedback-list-ui-for-the-selected-service",
+      "featureTitle": "Persist feedback submissions (rating + optional comment) in localStorage in Local Storage Mode, and make them reviewable from the Admin/Staff feedback list UI for the selected service.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/layout/AppLayout.tsx",
-        "frontend/src/index.css"
+        "frontend/src/features/admin/AdminPage.tsx",
+        "frontend/src/features/feedback/FeedbackPage.tsx",
+        "frontend/src/hooks/useQueries.ts",
+        "frontend/src/utils/sqfmLocalStorage.ts"
       ],
       "components": [
         "authorization@4.0.0",
@@ -83,17 +108,16 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-7"
+        "REQ-13"
       ],
       "confidence": "high"
     },
     {
-      "featureId": "feature-add-required-static-generated-images-to-the-frontend-and-render-them-in-the-ui-store-under-frontend-public-assets-generated",
-      "featureTitle": "Add required static generated images to the frontend and render them in the UI (store under frontend/public/assets/generated).",
+      "featureId": "feature-add-developer-facing-documentation-explaining-local-storage-mode-including-the-localstorage-schema-keys-how-tokens-are-generated-and-how-to-manually-reset-local-data-for-testing",
+      "featureTitle": "Add developer-facing documentation explaining Local Storage Mode, including the localStorage schema/keys, how tokens are generated, and how to manually reset local data for testing.",
       "files": [
-        "frontend/src/App.tsx",
-        "frontend/src/components/layout/AppLayout.tsx",
-        "frontend/src/features/queue/QueuePage.tsx"
+        "frontend/LOCAL_STORAGE_MODE.md",
+        "frontend/src/components/localStorageMode/LocalStorageModeControl.tsx"
       ],
       "components": [
         "authorization@4.0.0",
@@ -104,7 +128,7 @@
         "github-export-icp-cli@1.0.0"
       ],
       "testIds": [
-        "REQ-8"
+        "REQ-14"
       ],
       "confidence": "high"
     }

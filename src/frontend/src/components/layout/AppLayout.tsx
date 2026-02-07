@@ -1,8 +1,12 @@
 import { Link, useRouterState } from '@tanstack/react-router';
 import LoginButton from '../auth/LoginButton';
 import { Button } from '@/components/ui/button';
-import { Users, MessageSquare, Shield } from 'lucide-react';
+import { Users, MessageSquare, Shield, Database } from 'lucide-react';
 import { SiCoffeescript } from 'react-icons/si';
+import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import LocalStorageModeControl from '../localStorageMode/LocalStorageModeControl';
+import { useLocalStorageMode } from '../../features/localStorageMode/useLocalStorageMode';
+import { Badge } from '@/components/ui/badge';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -11,6 +15,7 @@ interface AppLayoutProps {
 export default function AppLayout({ children }: AppLayoutProps) {
   const routerState = useRouterState();
   const currentPath = routerState.location.pathname;
+  const { isEnabled: localMode } = useLocalStorageMode();
 
   const isActive = (path: string) => currentPath === path;
 
@@ -65,6 +70,30 @@ export default function AppLayout({ children }: AppLayoutProps) {
             </nav>
 
             <div className="flex items-center gap-2">
+              {localMode && (
+                <Badge variant="outline" className="hidden md:flex items-center gap-1">
+                  <Database className="h-3 w-3" />
+                  Local Mode
+                </Badge>
+              )}
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Database className="h-4 w-4" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent>
+                  <SheetHeader>
+                    <SheetTitle>Storage Settings</SheetTitle>
+                    <SheetDescription>
+                      Configure how queue and feedback data is stored
+                    </SheetDescription>
+                  </SheetHeader>
+                  <div className="mt-6">
+                    <LocalStorageModeControl />
+                  </div>
+                </SheetContent>
+              </Sheet>
               <LoginButton />
             </div>
           </div>
@@ -105,6 +134,15 @@ export default function AppLayout({ children }: AppLayoutProps) {
               </Link>
             </Button>
           </nav>
+          
+          {localMode && (
+            <div className="md:hidden mt-3 pt-3 border-t">
+              <Badge variant="outline" className="w-full justify-center">
+                <Database className="h-3 w-3 mr-1" />
+                Local Storage Mode Active
+              </Badge>
+            </div>
+          )}
         </div>
       </header>
 

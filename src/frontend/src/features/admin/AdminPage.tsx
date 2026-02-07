@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { useIsCallerAdmin, useListServices, useGetQueueSnapshot, useServeNext, useMarkNoShow, useGetServiceFeedback } from '../../hooks/useQueries';
+import { useLocalStorageMode } from '../../features/localStorageMode/useLocalStorageMode';
+import { getUserQueueEntry } from '../../utils/sqfmLocalStorage';
 import AccessDeniedScreen from '../../components/auth/AccessDeniedScreen';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -8,11 +10,12 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { toast } from 'sonner';
-import { Shield, Users, MessageSquare, UserCheck, UserX, Star, RefreshCw } from 'lucide-react';
+import { Shield, Users, MessageSquare, UserCheck, UserX, Star, RefreshCw, Ticket } from 'lucide-react';
 import type { QueueEntry } from '../../backend';
 
 export default function AdminPage() {
   const [selectedServiceId, setSelectedServiceId] = useState<bigint | null>(null);
+  const { isEnabled: localMode } = useLocalStorageMode();
 
   const { data: isAdmin, isLoading: adminLoading } = useIsCallerAdmin();
   const { data: services, isLoading: servicesLoading } = useListServices();
@@ -23,10 +26,16 @@ export default function AdminPage() {
 
   const selectedService = services?.find(s => s.id === selectedServiceId);
 
-  const activeQueue = queueSnapshot?.filter(entry => entry.status === 'waiting') || [];
+  const activeQueue = (queueSnapshot || []).filter(entry => entry.status === 'waiting');
   const sortedFeedback = [...(feedbackList || [])].sort((a, b) => 
     Number(b.submittedAt - a.submittedAt)
   );
+
+  const getTokenForEntry = (entry: QueueEntry): number | null => {
+    if (!localMode || !selectedServiceId) return null;
+    const localEntry = getUserQueueEntry(selectedServiceId.toString(), entry.userId.toString());
+    return localEntry?.token || null;
+  };
 
   const handleServeNext = async () => {
     if (!selectedServiceId) return;
@@ -179,6 +188,7 @@ export default function AdminPage() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>Position</TableHead>
+                        {localMode && <TableHead>Token</TableHead>}
                         <TableHead>Customer ID</TableHead>
                         <TableHead>Joined At</TableHead>
                         <TableHead>Status</TableHead>
@@ -186,33 +196,46 @@ export default function AdminPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {queueSnapshot.map((entry, index) => (
-                        <TableRow key={entry.userId.toString()}>
-                          <TableCell className="font-medium">
-                            {entry.status === 'waiting' ? activeQueue.findIndex(e => e.userId.toString() === entry.userId.toString()) + 1 : '-'}
-                          </TableCell>
-                          <TableCell className="font-mono text-sm">
-                            {entry.userId.toString().slice(0, 12)}...
-                          </TableCell>
-                          <TableCell className="text-sm text-muted-foreground">
-                            {formatDate(entry.joinedAt)}
-                          </TableCell>
-                          <TableCell>{getStatusBadge(entry.status)}</TableCell>
-                          <TableCell className="text-right">
-                            {entry.status === 'waiting' && (
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => handleMarkNoShow(entry)}
-                                disabled={markNoShow.isPending}
-                              >
-                                <UserX className="h-4 w-4 mr-1" />
-                                No Show
-                              </Button>
+                      {queueSnapshot.map((entry, index) => {
+                        const token = getTokenForEntry(entry);
+                        return (
+                          <TableRow key={entry.userId.toString()}>
+                            <TableCell className="font-medium">
+                              {entry.status === 'waiting' ? activeQueue.findIndex(e => e.userId.toString() === entry.userId.toString()) + 1 : '-'}
+                            </TableCell>
+                            {localMode && (
+                              <TableCell>
+                                {token ? (
+                                  <Badge variant="outline" className="font-mono">
+                                    <Ticket className="h-3 w-3 mr-1" />
+                                    #{token}
+                                  </Badge>
+                                ) : '-'}
+                              </TableCell>
                             )}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                            <TableCell className="font-mono text-sm">
+                              {entry.userId.toString().slice(0, 12)}...
+                            </TableCell>
+                            <TableCell className="text-sm text-muted-foreground">
+                              {formatDate(entry.joinedAt)}
+                            </TableCell>
+                            <TableCell>{getStatusBadge(entry.status)}</TableCell>
+                            <TableCell className="text-right">
+                              {entry.status === 'waiting' && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleMarkNoShow(entry)}
+                                  disabled={markNoShow.isPending}
+                                >
+                                  <UserX className="h-4 w-4 mr-1" />
+                                  No Show
+                                </Button>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
                     </TableBody>
                   </Table>
                 ) : (

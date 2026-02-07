@@ -119,8 +119,8 @@ export default function FeedbackPage() {
 
             {/* Rating */}
             <div className="space-y-2">
-              <Label>Rating (Required)</Label>
-              <div className="flex gap-2">
+              <Label>Rating *</Label>
+              <div className="flex items-center gap-2">
                 {[1, 2, 3, 4, 5].map((star) => (
                   <button
                     key={star}
@@ -131,7 +131,7 @@ export default function FeedbackPage() {
                     className="transition-transform hover:scale-110 focus:outline-none focus:ring-2 focus:ring-primary rounded"
                   >
                     <Star
-                      className={`h-10 w-10 ${
+                      className={`h-8 w-8 ${
                         star <= (hoveredRating || rating)
                           ? 'fill-yellow-400 text-yellow-400'
                           : 'text-gray-300'
@@ -139,12 +139,12 @@ export default function FeedbackPage() {
                     />
                   </button>
                 ))}
+                {rating > 0 && (
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    {rating} / 5
+                  </span>
+                )}
               </div>
-              {rating > 0 && (
-                <p className="text-sm text-muted-foreground">
-                  You rated: {rating} star{rating !== 1 ? 's' : ''}
-                </p>
-              )}
             </div>
 
             {/* Comment */}
@@ -152,14 +152,14 @@ export default function FeedbackPage() {
               <Label htmlFor="comment">Comment (Optional)</Label>
               <Textarea
                 id="comment"
-                placeholder="Tell us about your experience..."
+                placeholder="Share your experience with us..."
                 value={comment}
                 onChange={(e) => setComment(e.target.value)}
-                rows={5}
-                className="resize-none"
+                rows={4}
+                maxLength={500}
               />
-              <p className="text-xs text-muted-foreground">
-                {comment.length} characters
+              <p className="text-xs text-muted-foreground text-right">
+                {comment.length} / 500 characters
               </p>
             </div>
 
@@ -183,15 +183,6 @@ export default function FeedbackPage() {
               )}
             </Button>
           </form>
-        </CardContent>
-      </Card>
-
-      {/* Info Card */}
-      <Card className="bg-accent/10 border-dashed">
-        <CardContent className="pt-6">
-          <p className="text-sm text-muted-foreground text-center">
-            Your feedback helps services improve their quality and customer experience. All feedback is reviewed by service administrators.
-          </p>
         </CardContent>
       </Card>
     </div>

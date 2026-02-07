@@ -1,16 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useListServices, useJoinQueue, useLeaveQueue, useGetQueueStatus } from '../../hooks/useQueries';
+import { useListServices, useJoinQueue, useLeaveQueue, useGetQueueStatus, useGetUserToken } from '../../hooks/useQueries';
+import { useLocalStorageMode } from '../../features/localStorageMode/useLocalStorageMode';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Users, RefreshCw, LogOut, Clock, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Users, RefreshCw, LogOut, Clock, CheckCircle2, Ticket } from 'lucide-react';
 
 export default function QueuePage() {
   const [selectedServiceId, setSelectedServiceId] = useState<bigint | null>(null);
   const [isInQueue, setIsInQueue] = useState(false);
+  const { isEnabled: localMode } = useLocalStorageMode();
 
   const { data: services, isLoading: servicesLoading } = useListServices();
   const joinQueue = useJoinQueue();
@@ -19,6 +21,7 @@ export default function QueuePage() {
     selectedServiceId,
     isInQueue
   );
+  const { data: userToken } = useGetUserToken(selectedServiceId);
 
   const selectedService = services?.find(s => s.id === selectedServiceId);
 
@@ -152,7 +155,9 @@ export default function QueuePage() {
                   <Clock className="h-5 w-5 text-primary" />
                   Your Queue Status
                 </CardTitle>
-                <CardDescription>Live updates every 7 seconds</CardDescription>
+                <CardDescription>
+                  Live updates every {localMode ? '3' : '7'} seconds
+                </CardDescription>
               </div>
               <Button
                 variant="outline"
@@ -165,6 +170,15 @@ export default function QueuePage() {
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
+            {localMode && userToken && (
+              <div className="flex items-center justify-center">
+                <Badge variant="outline" className="text-lg py-2 px-4">
+                  <Ticket className="h-4 w-4 mr-2" />
+                  Token #{userToken}
+                </Badge>
+              </div>
+            )}
+            
             <div className="text-center py-8">
               <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-primary/10 mb-4">
                 <span className="text-4xl font-bold text-primary">
@@ -220,10 +234,9 @@ export default function QueuePage() {
               className="h-48 w-48 mb-6 opacity-50"
             />
             <h3 className="text-xl font-semibold mb-2">No Active Queue</h3>
-            <p className="text-muted-foreground mb-6 max-w-md">
-              Select a service above and join the queue to start tracking your position
+            <p className="text-muted-foreground max-w-md">
+              Select a service above to join the queue and start tracking your position
             </p>
-            <AlertCircle className="h-8 w-8 text-muted-foreground/50" />
           </CardContent>
         </Card>
       )}
